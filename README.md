@@ -5,7 +5,7 @@
 Install the latest version with
 
 ```
-$ composer install electronics-extreme/laravel-config-env
+$ composer require electronics-extreme/laravel-config-env
 ```
 
 Go to `app/Http/Kernel.php` and override the `$bootstrappers` with
