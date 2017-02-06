@@ -4,7 +4,6 @@ namespace ElectronicsExtreme\LaravelConfigEnv\Bootstrap;
 
 use Illuminate\Config\Repository;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Config\Repository as RepositoryContract;
 use Illuminate\Foundation\Bootstrap\LoadConfiguration as BaseLoadConfiguration;
@@ -12,23 +11,36 @@ use Illuminate\Foundation\Bootstrap\LoadConfiguration as BaseLoadConfiguration;
 class LoadConfiguration extends BaseLoadConfiguration
 {
     /**
-     * Reserve name for exclude folder from nesting config.
+     * Reserved name for exclude folder from nesting config.
      *
      * @var array
      */
-    protected $excludedEnvironmentNesting = ['testing', 'local', 'staging', 'production'];
+    protected $excludedEnvironmentNesting = ['testing', 'local', 'staging'];
 
     /**
      * Load the configuration items from all of the files.
      *
      * @param  \Illuminate\Contracts\Foundation\Application  $app
      * @param  \Illuminate\Contracts\Config\Repository       $repository
+     *
      * @return void
      */
     protected function loadConfigurationFiles(Application $app, RepositoryContract $repository)
     {
         parent::loadConfigurationFiles($app, $repository);
+        $this->loadEnvironmentConfigurationFiles($app, $repository);
+    }
 
+    /**
+     * Load the environment configuration items from all of the files.
+     *
+     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @param  \Illuminate\Contracts\Config\Repository       $repository
+     *
+     * @return void
+     */
+    protected function loadEnvironmentConfigurationFiles(Application $app, RepositoryContract $repository)
+    {
         foreach ($this->getEnvironmentConfigurationFiles($app) as $key => $path) {
             $repository->set($key, array_replace_recursive($repository->get($key), require $path));
         }
@@ -48,36 +60,33 @@ class LoadConfiguration extends BaseLoadConfiguration
         $configPath = realpath($app->configPath());
 
         foreach (Finder::create()->files()->name('*.php')->in($configPath) as $file) {
-            $nesting = $this->getConfigurationNesting($file, $configPath);
+            $directory = $this->getNestedDirectoryWrapper($file, $configPath);
 
-            if ($nesting && $this->isEnvironmentNesting($nesting)) {
+            if ($directory && $this->isEnvironmentNesting($directory)) {
                 continue;
             }
 
-            $files[$nesting.basename($file->getRealPath(), '.php')] = $file->getRealPath();
+            $files[$directory.basename($file->getRealPath(), '.php')] = $file->getRealPath();
         }
 
         return $files;
     }
 
     /**
-     * NOTE: Laravel 5.4 will remove this method!
+     * Wrapper method for Laravel 5.3 or below compatibility.
      *
-     * Get the configuration file nesting path.
+     * @param  mixed  $file
+     * @param  string $configPath
      *
-     * @param  \Symfony\Component\Finder\SplFileInfo  $file
-     * @param  string  $configPath
      * @return string
      */
-    protected function getConfigurationNesting(SplFileInfo $file, $configPath)
+    protected function getNestedDirectoryWrapper($file, $configPath)
     {
-        $directory = $file->getPath();
-
-        if ($tree = trim(str_replace($configPath, '', $directory), DIRECTORY_SEPARATOR)) {
-            $tree = str_replace(DIRECTORY_SEPARATOR, '.', $tree).'.';
+        if (method_exists($this, 'getNestedDirectory')) {
+            return $this->getNestedDirectory($file, $configPath);
         }
 
-        return $tree;
+        return $this->getConfigurationNesting($file, $configPath);
     }
 
     /**
@@ -97,6 +106,7 @@ class LoadConfiguration extends BaseLoadConfiguration
      * for the application.
      *
      * @param  \Illuminate\Contracts\Foundation\Application  $app
+     *
      * @return array
      */
     protected function getEnvironmentConfigurationFiles(Application $app)
@@ -114,7 +124,7 @@ class LoadConfiguration extends BaseLoadConfiguration
         }
 
         foreach (Finder::create()->files()->name('*.php')->in($configPath) as $file) {
-            $nesting = $this->getConfigurationNesting($file, $configPath);
+            $nesting = $this->getNestedDirectoryWrapper($file, $configPath);
 
             $files[$nesting.basename($file->getRealPath(), '.php')] = $file->getRealPath();
         }
