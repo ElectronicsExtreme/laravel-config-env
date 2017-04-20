@@ -5,7 +5,7 @@
 Install the latest version with
 
 ```
-$ composer install electronics-extreme/laravel-config-env
+$ composer require electronics-extreme/laravel-config-env
 ```
 
 Go to `app/Http/Kernel.php` and override the `$bootstrappers` with
@@ -36,7 +36,7 @@ protected $bootstrappers = [
  *
  * @var array
  */
-protected $bootstrappers = [
+protected $bootstrappers = [    
     'Illuminate\Foundation\Bootstrap\DetectEnvironment',
     'ElectronicsExtreme\LaravelConfigEnv\Bootstrap\LoadConfiguration',
     'Illuminate\Foundation\Bootstrap\ConfigureLogging',
@@ -58,14 +58,13 @@ Go to `app/Console/Kernel.php` and override the `$bootstrappers` with
  * @var array
  */
 protected $bootstrappers = [
-    'Illuminate\Foundation\Bootstrap\DetectEnvironment',
-    'ElectronicsExtreme\LaravelConfigEnv\Bootstrap\LoadConfiguration',
-    'Illuminate\Foundation\Bootstrap\ConfigureLogging',
-    'Illuminate\Foundation\Bootstrap\HandleExceptions',
-    'Illuminate\Foundation\Bootstrap\RegisterFacades',
-    'Illuminate\Foundation\Bootstrap\SetRequestForConsole',
-    'Illuminate\Foundation\Bootstrap\RegisterProviders',
-    'Illuminate\Foundation\Bootstrap\BootProviders',
+    \Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
+    \ElectronicsExtreme\LaravelConfigEnv\Bootstrap\LoadConfiguration::class,
+    \Illuminate\Foundation\Bootstrap\HandleExceptions::class,
+    \Illuminate\Foundation\Bootstrap\RegisterFacades::class,
+    \Illuminate\Foundation\Bootstrap\SetRequestForConsole::class,
+    \Illuminate\Foundation\Bootstrap\RegisterProviders::class,
+    \Illuminate\Foundation\Bootstrap\BootProviders::class,
 ];
 ```
 
@@ -78,12 +77,13 @@ protected $bootstrappers = [
  * @var array
  */
 protected $bootstrappers = [
-    \Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
-    \ElectronicsExtreme\LaravelConfigEnv\Bootstrap\LoadConfiguration::class,
-    \Illuminate\Foundation\Bootstrap\HandleExceptions::class,
-    \Illuminate\Foundation\Bootstrap\RegisterFacades::class,
-    \Illuminate\Foundation\Bootstrap\SetRequestForConsole::class,
-    \Illuminate\Foundation\Bootstrap\RegisterProviders::class,
-    \Illuminate\Foundation\Bootstrap\BootProviders::class,
+    'Illuminate\Foundation\Bootstrap\DetectEnvironment',
+    'ElectronicsExtreme\LaravelConfigEnv\Bootstrap\LoadConfiguration',
+    'Illuminate\Foundation\Bootstrap\ConfigureLogging',
+    'Illuminate\Foundation\Bootstrap\HandleExceptions',
+    'Illuminate\Foundation\Bootstrap\RegisterFacades',
+    'Illuminate\Foundation\Bootstrap\SetRequestForConsole',
+    'Illuminate\Foundation\Bootstrap\RegisterProviders',
+    'Illuminate\Foundation\Bootstrap\BootProviders',
 ];
 ```
